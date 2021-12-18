@@ -25,13 +25,19 @@ int debounce(long current_time){
 void add(long current_time){
   if (debounce(current_time)){
     counter += 5; 
+    Serial.println(counter);
     add_on = false;
   }
 }
 
 void sub(long current_time){
   if (debounce(current_time)){
-      counter -= 5;
+      if (counter-5 >= 0){
+        counter -= 5;
+        Serial.println(counter);
+      } else {
+        Serial.println("Counter is too small to subtract, try increasing it's value instead.");
+      }
       sub_on = false;
   }
 }
@@ -64,13 +70,11 @@ void loop() {
   if(add_on){
     current_time = millis();
     add(current_time);
-    Serial.println(counter);
   }
 
   else if(sub_on){
     current_time = millis();
     sub(current_time);
-    Serial.println(counter);
   }
   delay(100);
 }
