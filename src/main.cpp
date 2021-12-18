@@ -21,13 +21,9 @@ int debounce(long current_time){
 }
 
 void add(){
-  long current_time = millis();
-  if (debounce(current_time)){
-    last_interrupt_time = current_time;
-
-    counter += 5; 
-    add_on = false;
-  }
+  Serial.println("here");
+  counter += 5; 
+  add_on = false;
 }
 
 void handleInterrupt(){
@@ -43,19 +39,20 @@ void setup() {
   digitalWrite(13, HIGH);
 
   pinMode(BUTTON1, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(BUTTON1), handleInterrupt, FALLING);
-  attachInterrupt(digitalPinToInterrupt(BUTTON2), handleInterrupt, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BUTTON1), handleInterrupt, RISING);
+  //attachInterrupt(digitalPinToInterrupt(BUTTON2), handleInterrupt, FALLING);
 
   Serial.begin(9600);
-  Serial.println("init");
-  Serial.println("init");
-  Serial.println("init");
+  Serial.println("*** serial init ***");
 }
 
 void loop() {
   if(add_on){
     add();
     Serial.println(counter);
+  } else {
+    Serial.println("add_on: false");
   }
+
   delay(100);
 }
