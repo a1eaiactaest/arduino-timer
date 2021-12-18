@@ -2,11 +2,16 @@
 #include <Wire.h>
 
 // keep in mind that, only pins 2 and 3 can be used for interrupt.
-#define BUTTON1 2 // + 
+#define INTERRUPT_PIN 2 // + time 
+#define ADD_BUTTON 8
+#define SUB_BUTTON 9
+#define START_BUTTON 10
 #define DEBOUNCE_TIME_MS 5
 
 long counter;
+long current_time;
 volatile bool add_on;
+volatile bool sub_on;
 volatile long last_interrupt_time;
 
 int debounce(long current_time){
@@ -17,24 +22,39 @@ int debounce(long current_time){
   return 0;
 }
 
-void add(){
-  long current_time = millis();
+void add(long current_time){
   if (debounce(current_time)){
     counter += 5; 
     add_on = false;
   }
 }
 
+void sub(long current_time){
+  if (debounce(current_time)){
+      counter -= 5;
+      sub_on = false;
+  }
+}
+
 void handleInterrupt(){
-  add_on = true;
+  if (digitalRead(ADD_BUTTON) == LOW){
+    add_on = true;
+  }
+
+  else if (digitalRead(SUB_BUTTON) == LOW){
+    sub_on = true;
+  }
+
 }
 
 void setup() {
   counter = 0;
   add_on = false;
+  sub_on = false;
 
-  pinMode(BUTTON1, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(BUTTON1), handleInterrupt, FALLING);
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), handleInterrupt, FALLING);
 
   Serial.begin(9600);
   Serial.println("*** serial init ***");
@@ -42,7 +62,14 @@ void setup() {
 
 void loop() {
   if(add_on){
-    add();
+    current_time = millis();
+    add(current_time);
+    Serial.println(counter);
+  }
+
+  else if(sub_on){
+    current_time = millis();
+    sub(current_time);
     Serial.println(counter);
   }
   delay(100);
