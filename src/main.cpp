@@ -6,12 +6,13 @@
 #define ADD_BUTTON 8
 #define SUB_BUTTON 9
 #define START_BUTTON 10
-#define DEBOUNCE_TIME_MS 5
+#define DEBOUNCE_TIME_MS 2
 
 long counter;
 long current_time;
 volatile bool add_on;
 volatile bool sub_on;
+volatile bool timer_on;
 volatile long last_interrupt_time;
 
 int debounce(long current_time){
@@ -42,6 +43,13 @@ void sub(long current_time){
   }
 }
 
+void start_timer(long current_time){
+  if (debounce(current_time)){
+    Serial.println("DUPAAA");
+    timer_on = false;
+  }
+}
+
 void handleInterrupt(){
   if (digitalRead(ADD_BUTTON) == LOW){
     add_on = true;
@@ -51,15 +59,22 @@ void handleInterrupt(){
     sub_on = true;
   }
 
+  else if (digitalRead(START_BUTTON) == LOW){
+    timer_on = true;
+  }
+
+  else {
+    return;
+  }
 }
 
 void setup() {
   counter = 0;
   add_on = false;
   sub_on = false;
+  timer_on = false;
 
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
-
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), handleInterrupt, FALLING);
 
   Serial.begin(9600);
@@ -67,14 +82,19 @@ void setup() {
 }
 
 void loop() {
-  if(add_on){
-    current_time = millis();
+  current_time = millis();
+
+  if (add_on){
     add(current_time);
   }
 
-  else if(sub_on){
-    current_time = millis();
+  else if (sub_on){
     sub(current_time);
   }
-  delay(100);
+
+  else if (timer_on){
+    start_timer(current_time);
+  }
+
+  delay(500);
 }
