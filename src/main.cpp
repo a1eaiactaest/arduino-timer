@@ -3,10 +3,10 @@
 
 // keep in mind that, only pins 2 and 3 can be used for interrupt.
 #define INTERRUPT_PIN 2 // + time 
-#define ADD_BUTTON 8
-#define SUB_BUTTON 9
-#define START_BUTTON 10
-#define DEBOUNCE_TIME_MS 2
+#define ADD_BUTTON 5
+#define SUB_BUTTON 6
+#define START_BUTTON 7
+#define DEBOUNCE_TIME_MS 5
 
 long counter;
 long current_time;
@@ -45,29 +45,42 @@ void sub(long current_time){
 
 void start_timer(long current_time){
   if (debounce(current_time)){
-    Serial.println("DUPAAA");
+    if (counter > 0){
+      Serial.println("Starting timer");
+      while (counter > 0){
+        Serial.println(counter);
+        counter--;
+        delay(1000);
+      }
+      Serial.println("Timer finished");
+    } else {
+      Serial.println("Counter is equal to 0, increase `counter` value.");
+    }
+
     timer_on = false;
   }
 }
 
 void handleInterrupt(){
-  if (digitalRead(ADD_BUTTON) == LOW){
-    add_on = true;
-  }
+  if (!timer_on){
 
-  else if (digitalRead(SUB_BUTTON) == LOW){
-    sub_on = true;
-  }
+    if (digitalRead(ADD_BUTTON) == LOW){
+      add_on = true;
+    }
 
-  else if (digitalRead(START_BUTTON) == LOW){
-    timer_on = true;
-  }
+    else if (digitalRead(SUB_BUTTON) == LOW){
+      sub_on = true;
+    }
 
-  else {
-    return;
+    else if (digitalRead(START_BUTTON) == LOW){
+      timer_on = true;
+    }
+
+    else {
+      return;
+    }
   }
 }
-
 void setup() {
   counter = 0;
   add_on = false;
@@ -79,6 +92,7 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("*** serial init ***");
+  Serial.println(counter);
 }
 
 void loop() {
