@@ -15,6 +15,8 @@ volatile bool sub_on;
 volatile bool timer_on;
 volatile long last_interrupt_time;
 
+//int hold_threshold = 250; // in miliseconds
+
 int debounce(long current_time){
   if (current_time - last_interrupt_time > DEBOUNCE_TIME_MS){
     last_interrupt_time = current_time;
@@ -47,12 +49,14 @@ void start_timer(long current_time){
   if (debounce(current_time)){
     if (counter > 0){
       Serial.println("Starting timer");
-      while (counter > 0){
-        Serial.println(counter);
-        counter--;
+      long counter_tmp = counter; //save counter state
+      while (counter_tmp > 0){
+        Serial.println(counter_tmp);
+        counter_tmp--;
         delay(1000);
       }
       Serial.println("Timer finished");
+      Serial.println(counter);
     } else {
       Serial.println("Counter is equal to 0, increase `counter` value.");
     }
