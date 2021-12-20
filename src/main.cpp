@@ -17,10 +17,18 @@ volatile long last_interrupt_time;
 
 //int hold_threshold = 250; // in miliseconds
 String format_seconds(long seconds){
-  char time[5];
-  int m = seconds/60;
+  char time[6];
+  int min = seconds/60;
   int sec = seconds%60;
-  snprintf(time, sizeof(time), "%d:%d", m, sec);
+  if (min < 10 && sec < 10){
+    snprintf(time, sizeof(time), "0%d:0%d", min, sec);
+  } else if (min < 10){
+    snprintf(time, sizeof(time), "0%d:%d", min, sec);
+  } else if (sec < 10){
+    snprintf(time, sizeof(time), "%d:0%d", min, sec);
+  } else {
+    snprintf(time, sizeof(time), "%d:%d", min, sec);
+  }
   return time;
 }
 
@@ -35,7 +43,6 @@ int debounce(long current_time){
 void add(long current_time){
   if (debounce(current_time)){
     counter += 5; 
-    Serial.println(counter);
     add_on = false;
   }
 }
@@ -44,7 +51,6 @@ void sub(long current_time){
   if (debounce(current_time)){
       if (counter-5 >= 0){
         counter -= 5;
-        Serial.println(counter);
       } else {
         Serial.println("Counter is too small to subtract, try increasing it's value instead.");
       }
@@ -55,7 +61,7 @@ void sub(long current_time){
 void countdown(int n){
   Serial.println("Starting timer");
   while (n > 0){
-    Serial.println(n);
+    Serial.println(format_seconds(n));
     n--;
     delay(1000);
   }
@@ -103,7 +109,7 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("*** serial init ***");
-  Serial.println(counter);
+  Serial.println(format_seconds(counter));
 }
 
 void loop() {
@@ -111,15 +117,16 @@ void loop() {
 
   if (add_on){
     add(current_time);
+    Serial.println(format_seconds(counter));
   }
 
   else if (sub_on){
     sub(current_time);
+    Serial.println(format_seconds(counter));
   }
 
   else if (timer_on){
     start_timer(current_time);
   }
-  Serial.println(format_seconds(counter));
   delay(500);
 }
