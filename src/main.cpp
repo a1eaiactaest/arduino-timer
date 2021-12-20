@@ -16,6 +16,13 @@ volatile bool timer_on;
 volatile long last_interrupt_time;
 
 //int hold_threshold = 250; // in miliseconds
+String format_seconds(long seconds){
+  char time[5];
+  int m = seconds/60;
+  int sec = seconds%60;
+  snprintf(time, sizeof(time), "%d:%d", m, sec);
+  return time;
+}
 
 int debounce(long current_time){
   if (current_time - last_interrupt_time > DEBOUNCE_TIME_MS){
@@ -45,22 +52,23 @@ void sub(long current_time){
   }
 }
 
+void countdown(int n){
+  Serial.println("Starting timer");
+  while (n > 0){
+    Serial.println(n);
+    n--;
+    delay(1000);
+  }
+  Serial.println("Timer finished");
+}
+
 void start_timer(long current_time){
   if (debounce(current_time)){
     if (counter > 0){
-      Serial.println("Starting timer");
-      long counter_tmp = counter; //save counter state
-      while (counter_tmp > 0){
-        Serial.println(counter_tmp);
-        counter_tmp--;
-        delay(1000);
-      }
-      Serial.println("Timer finished");
-      Serial.println(counter);
+      countdown(counter);
     } else {
       Serial.println("Counter is equal to 0, increase `counter` value.");
     }
-
     timer_on = false;
   }
 }
@@ -79,7 +87,6 @@ void handleInterrupt(){
     else if (digitalRead(START_BUTTON) == LOW){
       timer_on = true;
     }
-
     else {
       return;
     }
@@ -113,6 +120,6 @@ void loop() {
   else if (timer_on){
     start_timer(current_time);
   }
-
+  Serial.println(format_seconds(counter));
   delay(500);
 }
