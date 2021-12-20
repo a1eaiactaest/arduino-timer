@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
 // keep in mind that, only pins 2 and 3 can be used for interrupt.
@@ -13,6 +14,8 @@
 #define GREEN_PIN 10
 #define BLUE_PIN 9
 
+#define BUZZER_PIN 4
+
 long counter;
 long current_time;
 volatile bool add_on;
@@ -20,7 +23,14 @@ volatile bool sub_on;
 volatile bool timer_on;
 volatile long last_interrupt_time;
 
-//int hold_threshold = 250; // in miliseconds
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void my_print(String str){
+  lcd.clear();
+  lcd.print(str);
+  Serial.println(str);
+}
+
 String format_seconds(long seconds){
   char time[6];
   int min = seconds/60;
@@ -57,7 +67,8 @@ void sub(long current_time){
       if (counter-5 >= 0){
         counter -= 5;
       } else {
-        Serial.println("Counter is too small to subtract, try increasing it's value instead.");
+        my_print("Increase counter!");
+        delay(500);
       }
       sub_on = false;
   }
@@ -105,18 +116,22 @@ void alarm(){
 }
 
 void countdown(int n){
-  Serial.println("Starting timer");
+  my_print("Starting timer");
+  delay(1000);
   while (n > 0){
-    Serial.println(format_seconds(n));
+    my_print(format_seconds(n));
     n--;
     delay(1000);
   }
-  Serial.println("Timer finished");
-  Serial.println(format_seconds(counter));
+  my_print("Timer finished");
+  delay(1000);
+  my_print(format_seconds(counter));
   timer_on = false;
   while (!timer_on){
     alarm();
+    digitalWrite(BUZZER_PIN, HIGH);
   }
+  digitalWrite(BUZZER_PIN, LOW);
 }
 
 void start_timer(long current_time){
@@ -124,7 +139,8 @@ void start_timer(long current_time){
     if (counter > 0){
       countdown(counter);
     } else {
-      Serial.println("Counter is equal to 0, increase `counter` value.");
+      my_print("Increase counter");
+      delay(500);
     }
     timer_on = false;
   }
@@ -148,12 +164,15 @@ void handleInterrupt(){
       return;
     }
   }
-}
+  }
+
 void setup() {
   counter = 0;
   add_on = false;
   sub_on = false;
   timer_on = false;
+
+  pinMode(BUZZER_PIN, OUTPUT);
 
   pinMode(RED_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
@@ -162,9 +181,16 @@ void setup() {
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), handleInterrupt, FALLING);
 
+  lcd.begin(16, 2);
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(format_seconds(counter));
+
   Serial.begin(9600);
   Serial.println("*** serial init ***");
   Serial.println(format_seconds(counter));
+  my_print(format_seconds(counter));
 }
 
 void loop() {
@@ -172,12 +198,12 @@ void loop() {
 
   if (add_on){
     add(current_time);
-    Serial.println(format_seconds(counter));
+    my_print(format_seconds(counter));
   }
 
   else if (sub_on){
     sub(current_time);
-    Serial.println(format_seconds(counter));
+    my_print(format_seconds(counter));
   }
 
   else if (timer_on){
