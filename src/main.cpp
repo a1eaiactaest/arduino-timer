@@ -64,13 +64,13 @@ void add(long current_time){
 
 void sub(long current_time){
   if (debounce(current_time)){
-      if (counter-5 >= 0){
-        counter -= 5;
-      } else {
-        my_print("Increase counter!");
-        delay(500);
-      }
-      sub_on = false;
+    if (counter-5 >= 0){
+      counter -= 5;
+    } else {
+      my_print("Increase counter!");
+      delay(500);
+    }
+    sub_on = false;
   }
 }
 void light_rgb(int r, int g, int b){
@@ -148,15 +148,12 @@ void start_timer(long current_time){
 
 void handleInterrupt(){
   if (!timer_on){
-
     if (digitalRead(ADD_BUTTON) == LOW){
       add_on = true;
     }
-
     else if (digitalRead(SUB_BUTTON) == LOW){
       sub_on = true;
     }
-
     else if (digitalRead(START_BUTTON) == LOW){
       timer_on = true;
     }
@@ -164,7 +161,7 @@ void handleInterrupt(){
       return;
     }
   }
-  }
+}
 
 void setup() {
   counter = 0;
