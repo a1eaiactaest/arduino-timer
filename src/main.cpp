@@ -8,6 +8,11 @@
 #define START_BUTTON 7
 #define DEBOUNCE_TIME_MS 5
 
+// RGB LED, pins below are PWM
+#define RED_PIN 11
+#define GREEN_PIN 10
+#define BLUE_PIN 9
+
 long counter;
 long current_time;
 volatile bool add_on;
@@ -57,6 +62,47 @@ void sub(long current_time){
       sub_on = false;
   }
 }
+void light_rgb(int r, int g, int b){
+  analogWrite(RED_PIN, r);
+  analogWrite(GREEN_PIN, g);
+  analogWrite(BLUE_PIN, b);
+}
+
+void alarm(){
+  int r = 255;
+  int g = 0;
+  int b = 0;
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    g++;
+    delay(2);
+  }
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    r--;
+    delay(2);
+  }
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    b++;
+    delay(2);
+  }
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    g--;
+    delay(2);
+  }
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    r++;
+    delay(2);
+  }
+  for (int i = 0; i < 255; i++) {
+    light_rgb(r, g, b);
+    b--;
+    delay(2);
+  }
+}
 
 void countdown(int n){
   Serial.println("Starting timer");
@@ -66,6 +112,11 @@ void countdown(int n){
     delay(1000);
   }
   Serial.println("Timer finished");
+  Serial.println(format_seconds(counter));
+  timer_on = false;
+  while (!timer_on){
+    alarm();
+  }
 }
 
 void start_timer(long current_time){
@@ -103,6 +154,10 @@ void setup() {
   add_on = false;
   sub_on = false;
   timer_on = false;
+
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
 
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), handleInterrupt, FALLING);
