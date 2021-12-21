@@ -132,6 +132,11 @@ void countdown(int n){
     digitalWrite(BUZZER_PIN, HIGH);
   }
   digitalWrite(BUZZER_PIN, LOW);
+
+  // turn off RGB LED completly
+  digitalWrite(RED_PIN, LOW);
+  digitalWrite(GREEN_PIN, LOW);
+  digitalWrite(BLUE_PIN, LOW);
 }
 
 void start_timer(long current_time){
@@ -186,7 +191,6 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("*** serial init ***");
-  Serial.println(format_seconds(counter));
   my_print(format_seconds(counter));
 }
 
