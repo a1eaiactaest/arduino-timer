@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 // keep in mind that, only pins 2 and 3 can be used for interrupt.
 #define INTERRUPT_PIN 2 // + time 
@@ -29,6 +30,26 @@ void my_print(String str){
   lcd.clear();
   lcd.print(str);
   Serial.println(str);
+}
+
+void write_eeprom(int adr, long n){
+  /*
+    since arduino long is 4 bytes and one EEPROM address 
+    stores 1 byte we have to split it in 4.
+  */
+  EEPROM.update(adr, (n >> 24) & 0xFF);
+  EEPROM.update(adr+1, (n >> 16) & 0xFF);
+  EEPROM.update(adr+2, (n >> 8) & 0xFF);
+  EEPROM.update(adr+3, n & 0xFF);
+}
+
+long read_eeprom(int adr){
+  long ret = 0;
+  ret += (long)EEPROM.read(adr) << 24;
+  ret += (long)EEPROM.read(adr+1) << 26;
+  ret += (long)EEPROM.read(adr+2) << 8;
+  ret += (long)EEPROM.read(adr+3);
+  return ret;
 }
 
 String format_seconds(long seconds){
@@ -169,7 +190,11 @@ void handleInterrupt(){
 }
 
 void setup() {
-  counter = 0;
+  if (EEPROM.read(1) != 255){
+    counter = read_eeprom(1);
+  } else {
+    counter = 0;
+  }
   add_on = false;
   sub_on = false;
   timer_on = false;
@@ -210,5 +235,6 @@ void loop() {
   else if (timer_on){
     start_timer(current_time);
   }
+  write_eeprom(1, counter);
   delay(500);
 }
